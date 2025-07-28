@@ -8,10 +8,20 @@ import {
   MagnifyingGlassIcon,
   HeartIcon,
   StarIcon,
-  Bars3Icon
+  Bars3Icon,
+  Cog6ToothIcon,
+  BellIcon
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import WalletIcon from '@/components/icons/WalletIcon';
+import NotificationsPanel from '@/components/layout/NotificationsPanel';
+import dynamic from 'next/dynamic';
+
+// استيراد ديناميكي لمكون الإعدادات لتجنب مشاكل الترميز على جانب الخادم
+const SettingsMenu = dynamic(
+  () => import('@/components/profile/SettingsMenu'),
+  { ssr: false }
+);
 
 export default function TopNav() {
   const { user } = useAuth();
@@ -109,6 +119,12 @@ export default function TopNav() {
             <StarIcon className="h-4 w-4 mr-1" />
             <span>{points > 9999 ? '9999+' : points}</span>
           </div>
+          
+          {/* زر الإشعارات */}
+          <NotificationsPanel />
+          
+          {/* زر الإعدادات */}
+          {user && !user.isAnonymous && <SettingsMenu />}
           
           {/* زر الوضع المظلم */}
           <ThemeToggle />

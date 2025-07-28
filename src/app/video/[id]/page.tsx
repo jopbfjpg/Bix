@@ -9,6 +9,8 @@ import { useAuth } from '@/components/auth/AuthProvider';
 import { HeartIcon, ChatBubbleOvalLeftIcon, ShareIcon, ArrowLeftIcon, PaperAirplaneIcon, MusicalNoteIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { mockVideos, mockComments } from '@/lib/mockData';
+import CommentForm from '@/components/video/CommentForm';
+import CommentItem from '@/components/video/CommentItem';
 
 // Function to find video by ID
 const findVideoById = (id: string) => {
@@ -243,100 +245,66 @@ export default function VideoPage() {
       </div>
       
       {/* Comments Section */}
-      <div className="p-4">
-        <h2 className="font-bold mb-4">Comments ({videoComments.length})</h2>
+      <div className="p-4" id="comments">
+        <h2 className="font-bold mb-4">التعليقات ({videoComments.length})</h2>
         
-        <form onSubmit={handleAddComment} className="mb-6">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full overflow-hidden mr-2 flex-shrink-0">
-              <Image
-                src={user?.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg'}
-                alt={user?.displayName || 'User'}
-                width={32}
-                height={32}
-                className="object-cover"
-              />
-            </div>
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 bg-gray-100 px-4 py-2 rounded-full focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-            <button
-              type="submit"
-              disabled={!comment.trim()}
-              className={`ml-2 p-2 rounded-full ${
-                comment.trim() ? 'text-indigo-600' : 'text-gray-400'
-              }`}
-            >
-              <PaperAirplaneIcon className="h-5 w-5 transform rotate-90" />
-            </button>
-          </div>
-        </form>
+        {/* استيراد مكون نموذج التعليق */}
+        <div className="mb-6 relative">
+          <CommentForm 
+            videoId={id as string} 
+            onCommentAdded={(newComment) => {
+              setVideoComments([newComment, ...videoComments]);
+            }}
+            replyTo={null}
+          />
+        </div>
         
         <div className="space-y-4">
           {videoComments.map((comment) => (
-            <div key={comment.id} className="flex mb-4">
-              <div className="h-8 w-8 rounded-full overflow-hidden mr-3 flex-shrink-0">
-                <Image
-                  src={comment.userImage}
-                  alt={comment.username}
-                  width={32}
-                  height={32}
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <div className="bg-gray-100 rounded-lg px-3 py-2">
-                  <div className="flex items-center">
-                    <span className="font-medium text-sm mr-2">@{comment.username}</span>
-                  </div>
-                  <p className="text-sm">{comment.text}</p>
+            <div key={comment.id}>
+              <CommentItem 
+                comment={comment}
+                onReply={(replyInfo) => {
+                  // تمرير معلومات الرد إلى نموذج التعليق
+                  // في التطبيق الحقيقي، يمكن استخدام حالة عامة أو سياق (context)
+                  // هنا نستخدم محاكاة بسيطة
+                  const replyComment = {
+                    id: `reply-${Date.now()}`,
+                    username: user?.displayName || user?.email?.split('@')[0] || 'Anonymous User',
+                    userImage: user?.photoURL || 'https://randomuser.me/api/portraits/lego/1.jpg',
+                    text: `رد على @${replyInfo.username}`,
+                    timestamp: 'الآن',
+                    likes: 0,
+                    replies: []
+                  };
+                  
+                  // إضافة الرد إلى التعليقات
+                  // في التطبيق الحقيقي، سيتم تخزين الردود بشكل هرمي
+                  setVideoComments([replyComment, ...videoComments]);
+                }}
+                onDelete={(commentId) => {
+                  // حذف التعليق
+                  setVideoComments(videoComments.filter(c => c.id !== commentId));
+                }}
+              />
+              
+              {/* عرض الردود على هذا التعليق */}
+              {comment.replies && comment.replies.map((reply: any) => (
+                <div key={reply.id} className="mt-2 ml-8 rtl:mr-8 rtl:ml-0">
+                  <CommentItem 
+                    comment={reply}
+                    onReply={(replyInfo) => {
+                      // في التطبيق الحقيقي، يمكن إضافة رد على الرد
+                      console.log('Reply to reply:', replyInfo);
+                    }}
+                    onDelete={(commentId) => {
+                      // حذف الرد
+                      console.log('Delete reply:', commentId);
+                    }}
+                    isReply={true}
+                  />
                 </div>
-                <div className="flex items-center mt-1 text-xs text-gray-500">
-                  <span className="mr-3">{comment.timestamp}</span>
-                  <button className="mr-3">Reply</button>
-                  <button className="flex items-center">
-                    <HeartIcon className="h-3 w-3 mr-1" />
-                    <span>{comment.likes}</span>
-                  </button>
-                </div>
-                
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-2 ml-4 space-y-2">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex">
-                        <div className="h-6 w-6 rounded-full overflow-hidden mr-2 flex-shrink-0">
-                          <Image
-                            src={reply.userImage}
-                            alt={reply.username}
-                            width={24}
-                            height={24}
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="bg-gray-100 rounded-lg px-3 py-2">
-                            <div className="flex items-center">
-                              <span className="font-medium text-xs mr-2">@{reply.username}</span>
-                            </div>
-                            <p className="text-xs">{reply.text}</p>
-                          </div>
-                          <div className="flex items-center mt-1 text-xs text-gray-500">
-                            <span className="mr-3">{reply.timestamp}</span>
-                            <button className="flex items-center">
-                              <HeartIcon className="h-3 w-3 mr-1" />
-                              <span>{reply.likes}</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
           ))}
         </div>

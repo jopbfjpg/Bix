@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { XMarkIcon, BellIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/components/auth/AuthProvider';
+import NotificationBadge from './NotificationBadge';
 
 // نوع البيانات للإشعار
 type Notification = {
@@ -169,18 +170,11 @@ export default function NotificationsPanel() {
   return (
     <>
       {/* زر الإشعارات */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="relative p-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors duration-300"
-        aria-label="الإشعارات"
-      >
-        <BellIcon className="h-6 w-6" />
-        {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
-            {unreadCount}
-          </span>
-        )}
-      </button>
+      <NotificationBadge 
+        count={unreadCount} 
+        onClick={() => setIsOpen(true)} 
+        showPulse={unreadCount > 0} 
+      />
 
       {/* لوحة الإشعارات */}
       <AnimatePresence>

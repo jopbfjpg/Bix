@@ -17,21 +17,64 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // تأكد من أن الكود يعمل فقط على جانب العميل
   useEffect(() => {
     setMounted(true);
+    
+    // استرجاع الثيم المحفوظ من localStorage
     const savedTheme = localStorage.getItem('theme') as Theme | null;
     
     if (savedTheme) {
       setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+      applyTheme(savedTheme);
     } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       setTheme('dark');
-      document.documentElement.classList.add('dark');
+      applyTheme('dark');
     }
+    
+    // إضافة مستمع لتغييرات وضع النظام
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      const newTheme = e.matches ? 'dark' : 'light';
+      if (!localStorage.getItem('theme')) {
+        // تطبيق الثيم الجديد فقط إذا لم يكن المستخدم قد اختار ثيم محدد
+        setTheme(newTheme);
+        applyTheme(newTheme);
+      }
+    };
+    
+    mediaQuery.addEventListener('change', handleChange);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
   }, []);
+
+  // تطبيق الثيم على العناصر
+  const applyTheme = (newTheme: Theme) => {
+    // تطبيق الكلاس على عنصر html
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    
+    // تحديث لون الثيم في meta tag
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute(
+        'content',
+        newTheme === 'dark' ? '#1f2937' : '#ffffff'
+      );
+    }
+    
+    // تحديث لون شريط الحالة في الأجهزة المحمولة
+    if (newTheme === 'dark') {
+      document.documentElement.style.setProperty('--bg-color', '#1f2937');
+      document.documentElement.style.setProperty('--text-color', '#f3f4f6');
+    } else {
+      document.documentElement.style.setProperty('--bg-color', '#ffffff');
+      document.documentElement.style.setProperty('--text-color', '#1f2937');
+    }
+  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+    applyTheme(newTheme);
     localStorage.setItem('theme', newTheme);
   };
 

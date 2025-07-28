@@ -265,7 +265,7 @@ function VideoCard({
         <video
           ref={videoRef}
           src={videoUrl}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain md:object-cover"
           loop
           playsInline
           onClick={togglePlayPause}
@@ -305,7 +305,7 @@ function VideoCard({
         )}
       </div>
       
-      {/* Action buttons - Right side, mobile optimized */}
+      {/* Action buttons - Right side, mobile & tablet optimized */}
       <div className="absolute right-3 bottom-32 flex flex-col items-center space-y-6 z-30">
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -326,7 +326,7 @@ function VideoCard({
           whileTap={{ scale: 0.9 }}
           className="flex flex-col items-center"
         >
-          <Link href={`/video/${id}`} className="bg-black/40 backdrop-blur-sm rounded-full p-3 shadow-lg">
+          <Link href={`/video/${id}#comments`} className="bg-black/40 backdrop-blur-sm rounded-full p-3 shadow-lg">
             <ChatBubbleOvalLeftIcon className="h-7 w-7 text-white" />
           </Link>
           <span className="text-white text-xs mt-1 font-medium">{comments}</span>
@@ -334,6 +334,27 @@ function VideoCard({
 
         <motion.button
           whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Share functionality
+            if (navigator.share) {
+              navigator.share({
+                title: `فيديو من @${username}`,
+                text: caption,
+                url: `${window.location.origin}/video/${id}`
+              }).catch(err => console.error('Error sharing:', err));
+            } else {
+              // Fallback for browsers that don't support Web Share API
+              const shareUrl = `${window.location.origin}/video/${id}`;
+              navigator.clipboard.writeText(shareUrl);
+              toast.showToast({
+                type: 'success',
+                title: 'تم نسخ الرابط',
+                message: 'تم نسخ رابط الفيديو إلى الحافظة',
+                duration: 3000
+              });
+            }
+          }}
           className="flex flex-col items-center"
         >
           <div className="bg-black/40 backdrop-blur-sm rounded-full p-3 shadow-lg">
@@ -358,7 +379,7 @@ function VideoCard({
         </motion.button>
       </div>
 
-      {/* Creator info and video description - Bottom left, mobile optimized */}
+      {/* Creator info and video description - Bottom left, mobile & tablet optimized */}
       <div className="absolute bottom-0 left-0 right-20 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-20">
         {/* Creator info with follow button */}
         <div className="flex items-center mb-3">
@@ -372,23 +393,26 @@ function VideoCard({
                 className="object-cover"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 flex items-center">
               <span className="font-bold text-white text-base block">@{username}</span>
+              {/* Follow button moved next to username */}
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFollow(e);
+                }}
+                className={`ml-2 px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
+                  isUserFollowing 
+                    ? 'bg-gray-600/80 text-white border border-gray-500' 
+                    : 'bg-red-500 text-white hover:bg-red-600'
+                }`}
+              >
+                {isUserFollowing ? 'متابَع' : 'متابعة'}
+              </motion.button>
             </div>
           </Link>
-          
-          {/* Follow button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleFollow}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all duration-200 ${
-              isUserFollowing 
-                ? 'bg-gray-600/80 text-white border border-gray-500' 
-                : 'bg-red-500 text-white hover:bg-red-600'
-            }`}
-          >
-            {isUserFollowing ? 'متابَع' : 'متابعة'}
-          </motion.button>
         </div>
         
         {/* Video description */}

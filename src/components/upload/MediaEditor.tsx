@@ -14,6 +14,8 @@ import {
   PlusIcon
 } from '@heroicons/react/24/outline';
 import { useToast } from '@/components/layout/ToastManager';
+import FilterSelector from './FilterSelector';
+import MusicSelector from './MusicSelector';
 
 // أنواع الفلاتر
 const FILTERS = [
@@ -318,31 +320,12 @@ export default function MediaEditor({ file, type, preview, onSave, onCancel }: M
       {/* محتوى التبويب */}
       <div className="bg-gray-900 p-4 overflow-x-auto">
         {activeTab === 'filter' && (
-          <div className="flex space-x-4 rtl:space-x-reverse">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => setSelectedFilter(filter.id)}
-                className={`flex flex-col items-center ${selectedFilter === filter.id ? 'text-indigo-400' : 'text-white'}`}
-              >
-                <div className={`w-16 h-16 rounded-md overflow-hidden mb-1 border-2 ${selectedFilter === filter.id ? 'border-indigo-400' : 'border-transparent'}`}>
-                  {type === 'video' ? (
-                    <video
-                      src={preview}
-                      className={`w-full h-full object-cover ${filter.class}`}
-                    />
-                  ) : (
-                    <img
-                      src={preview}
-                      alt={filter.name}
-                      className={`w-full h-full object-cover ${filter.class}`}
-                    />
-                  )}
-                </div>
-                <span className="text-xs">{filter.name}</span>
-              </button>
-            ))}
-          </div>
+          <FilterSelector
+            previewUrl={preview}
+            selectedFilter={selectedFilter}
+            onSelectFilter={setSelectedFilter}
+            isVideo={type === 'video'}
+          />
         )}
         
         {activeTab === 'effects' && (
@@ -367,32 +350,10 @@ export default function MediaEditor({ file, type, preview, onSave, onCancel }: M
         )}
         
         {activeTab === 'music' && (
-          <div className="space-y-2">
-            {MUSIC_TRACKS.map((track) => (
-              <button
-                key={track.id}
-                onClick={() => setSelectedMusic(track.id)}
-                className={`w-full flex items-center p-3 rounded-md ${
-                  selectedMusic === track.id ? 'bg-indigo-900' : 'bg-gray-800'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  selectedMusic === track.id ? 'bg-indigo-600' : 'bg-gray-700'
-                }`}>
-                  <MusicalNoteIcon className="h-5 w-5 text-white" />
-                </div>
-                <div className="mr-3 rtl:ml-3 rtl:mr-0 text-right rtl:text-right ltr:text-left flex-1">
-                  <div className="text-sm font-medium text-white">{track.name}</div>
-                  {track.artist && (
-                    <div className="text-xs text-gray-400">{track.artist}</div>
-                  )}
-                </div>
-                {selectedMusic === track.id && (
-                  <CheckIcon className="h-5 w-5 text-indigo-400" />
-                )}
-              </button>
-            ))}
-          </div>
+          <MusicSelector
+            selectedTrackId={selectedMusic}
+            onSelectTrack={setSelectedMusic}
+          />
         )}
         
         {activeTab === 'trim' && type === 'video' && (

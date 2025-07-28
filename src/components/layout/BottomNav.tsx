@@ -16,6 +16,13 @@ import {
   ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
   MagnifyingGlassIcon as MagnifyingGlassIconSolid
 } from '@heroicons/react/24/solid';
+import dynamic from 'next/dynamic';
+
+// استيراد ديناميكي لمكون إنشاء الفيديو
+const VideoCreationButton = dynamic(
+  () => import('@/components/upload/VideoCreationButton'),
+  { ssr: false }
+);
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -29,30 +36,48 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-800">
-      <div className="flex justify-around items-center h-16">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = isActive ? item.activeIcon : item.icon;
-          
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              aria-label={item.name}
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
-                isActive 
-                  ? 'text-indigo-600 dark:text-indigo-400 font-medium' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
-            >
-              <Icon className={`h-6 w-6 ${isActive ? 'transform scale-110 transition-transform duration-200' : ''}`} />
-              <span className="text-xs mt-1 font-medium">{item.name}</span>
-            </Link>
-          );
-        })}
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+        <div className="flex justify-around items-center h-16">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = isActive ? item.activeIcon : item.icon;
+            
+            // إذا كان العنصر هو "إنشاء"، نعرض زر وهمي فقط
+            if (item.name === 'إنشاء') {
+              return (
+                <div
+                  key={item.name}
+                  className="flex flex-col items-center justify-center w-full h-full opacity-0"
+                >
+                  <Icon className="h-6 w-6" />
+                  <span className="text-xs mt-1 font-medium">{item.name}</span>
+                </div>
+              );
+            }
+            
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                aria-label={item.name}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors duration-300 ${
+                  isActive 
+                    ? 'text-indigo-600 dark:text-indigo-400 font-medium' 
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                <Icon className={`h-6 w-6 ${isActive ? 'transform scale-110 transition-transform duration-200' : ''}`} />
+                <span className="text-xs mt-1 font-medium">{item.name}</span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </div>
+      
+      {/* زر إنشاء الفيديو */}
+      <VideoCreationButton />
+    </>
   );
 }
